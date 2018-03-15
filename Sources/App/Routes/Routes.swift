@@ -1,5 +1,6 @@
 import Vapor
 
+
 extension Droplet {
     func setupRoutes() throws {
         get("hello") { req in
@@ -19,6 +20,11 @@ extension Droplet {
         }
 
         get("description") { req in return req.description }
+        
+        //MARK: Custom Controllers to handle requests
+        
+        let pokeController = PokeAPIController(drop: self)
+        get("poke", handler: pokeController.getPokemon)
         
         try resource("posts", PostController.self)
     }
