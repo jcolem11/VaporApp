@@ -17,6 +17,7 @@ struct NotificationMessage{
 class NotificationView: UIView {
     
     typealias NotificationViewTapHandler = () -> Void
+    
     //MARK: Properties
     @IBOutlet var contentView: UIView!
     
@@ -42,7 +43,6 @@ class NotificationView: UIView {
     var tapHandler: NotificationViewTapHandler?
     
     //MARK: Init
-
     init(notificationMessage message: NotificationMessage, tapHandler handler:@escaping NotificationViewTapHandler = {}) {
         self.message = message
         self.tapHandler = handler
@@ -59,7 +59,7 @@ class NotificationView: UIView {
     //MARK: Private
 
     private func nibSetup() {
-        backgroundColor = .purple
+        backgroundColor = .clear
         translatesAutoresizingMaskIntoConstraints = false
         contentView = loadViewFromNib()
         contentView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
