@@ -21,6 +21,11 @@ extension Droplet {
 
         get("description") { req in return req.description }
         
+        
+        //MARK: Setup Socket Connection
+        
+        let _ = SocketController(drop: self)
+        
         //MARK: Custom Controllers to handle requests
         
         let pokeController = PokeAPIController(drop: self)
