@@ -14,11 +14,13 @@ protocol KeyboardPresenting {
 }
 class ViewController: UIViewController{
     
-    static let WebSocketURLString = "ws://localhost:8080/chat"
+    static let LocalWebSocketURLString = "ws://localhost:8080/chat"
+    static let RemoteWebSocketURLString = "ws://possible-develop.vapor.cloud/chat"
+    
     @IBOutlet weak var textfield: UITextField!
     @IBOutlet weak var scrollView: UIScrollView!
     
-    var socket = WebSocket(url:URL(string:ViewController.WebSocketURLString)!)
+    var socket = WebSocket(url:URL(string:ViewController.LocalWebSocketURLString)!)
     
     override func viewDidLoad() {
         super.viewDidLoad()
