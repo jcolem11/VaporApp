@@ -9,13 +9,13 @@ import Foundation
 import Vapor
 import HTTP
 
-// A basic controller that does not implement ResourceRepresentable protocol
 
 final class SocketController{
     
+    typealias ClientSocket = (userID:String, socket:WebSocket)
     let drop: Droplet
     
-    var socketConnections = [WebSocket]()
+    var socketConnections = [ClientSocket]()
     
     init(drop: Droplet) {
         self.drop = drop
@@ -25,7 +25,11 @@ final class SocketController{
     func setupSocket(){
         //This method upgrades reqeuest to WebSocket connection
         drop.socket("chat") { (req, socket) in
-            self.socketConnections.append(socket)
+            
+            let id = String( Int.random(min: 1, max: 99) )
+            let newClient = ClientSocket(id, socket)
+            
+            self.socketConnections.append(newClient)
             
             try background {
                 while socket.state == .open {
@@ -36,10 +40,12 @@ final class SocketController{
             
             socket.onText = { socket, text in
                 for s in self.socketConnections{
-                    try s.send(text)
+                    if (s.socket !== socket){
+                        try s.socket.send(text)
+                    }
                 }
+
             }
-            
             
             socket.onClose = { socket, code, reason, clean in
                 print("Server closed socket connection.....")
