@@ -8,22 +8,30 @@
 import UIKit 
 import Starscream
 
-
+protocol KeyboardPresenting {
+    func keyboardWillShow(_ notification: Notification)
+    func keyboardWillHide(_ notification: Notification)
+}
 class ViewController: UIViewController{
     
     static let WebSocketURLString = "ws://localhost:8080/chat"
     @IBOutlet weak var textfield: UITextField!
+    @IBOutlet weak var scrollView: UIScrollView!
+    
     var socket = WebSocket(url:URL(string:ViewController.WebSocketURLString)!)
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
+
         textfield.delegate = self
         socket.delegate = self
         socket.connect()
         
     }
-
+    
 }
 
 extension ViewController: UITextFieldDelegate{
@@ -41,9 +49,14 @@ extension ViewController: UITextFieldDelegate{
 }
 
 extension UIViewController{
+    
     func presentNotification(withMessage message: NotificationMessage){
         let nv = NotificationView(notificationMessage: message)
-        nv.tapHandler = { nv.removeFromSuperview() }
+        
+        nv.tapHandler = {
+            self.dismissNotificationView(nv)
+        }
+        
         view.addSubview(nv)
         view.bringSubview(toFront: nv)
         nv.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
@@ -53,35 +66,62 @@ extension UIViewController{
         offsetConstraint.isActive = true
         self.view.layoutIfNeeded()
         
-        //TODO: Separate this
         UIView.animate(withDuration: 0.5 , animations: {
             offsetConstraint.isActive = false
             actualConstraint.isActive = true
             self.view.layoutIfNeeded()
-        }) { (complete) in
-            
+        })
+    }
+    
+    func dismissNotificationView(_ notificationView:NotificationView){
+        let offsetConstraint = notificationView.topAnchor.constraint(equalTo: self.view.topAnchor, constant: -300.00)
+
+        UIView.animate(withDuration: 0.2, animations: {
+            offsetConstraint.isActive = true
+            self.view.layoutIfNeeded()
+        }) { (val) in
+            notificationView.removeFromSuperview()
         }
     }
+    
 }
 
 extension ViewController: WebSocketDelegate{
     
     func websocketDidConnect(socket: WebSocketClient) {
-        let message = NotificationMessage(title: "Socket Connection:", content: "Successful")
+        let message = NotificationMessage(title: "WebSocket:", content: "Connection Successful")
         presentNotification(withMessage: message)
         print("SOCKET CONNECTION SUCCESSFUL")
     }
     
     func websocketDidDisconnect(socket: WebSocketClient, error: Error?) {
+        let message = NotificationMessage(title: "WebSocket:", content: "Disconnected")
+        presentNotification(withMessage: message)
         print("SOCKET DISCONNECTED")
     }
     
     func websocketDidReceiveMessage(socket: WebSocketClient, text: String) {
-        print("SOCKET RECEIVED MESSAGE:\(text)")
+        let message = NotificationMessage(title: "Message received:", content: text)
+        presentNotification(withMessage: message)
     }
     
     func websocketDidReceiveData(socket: WebSocketClient, data: Data) {
         print("SOCKET RECEIVED DATA")
     }
 }
+
+extension ViewController: KeyboardPresenting{
+    
+    @objc func keyboardWillShow(_ notification: Notification) {
+        if let keyboardSize = (notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
+            scrollView.contentInset.bottom = keyboardSize.height
+        }
+    }
+    
+    @objc func keyboardWillHide(_ notification: Notification) {
+        scrollView.contentInset.bottom = 0
+    }
+}
+
+
 

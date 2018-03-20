@@ -8,6 +8,19 @@
 import Foundation
 import UIKit
 
+enum NotificationColor: Int{
+    case green = 0
+    case red
+    
+    var UIColorValue : UIColor {
+        switch self {
+        case .red:
+            return UIColor.red
+        default:
+            return UIColor.green
+        }
+    }
+}
 
 struct NotificationMessage{
     var title: String = ""
@@ -33,6 +46,12 @@ class NotificationView: UIView {
         }
     }
     
+    private var color: NotificationColor {
+        didSet{
+            contentView.backgroundColor = self.color.UIColorValue
+        }
+    }
+
     var message: NotificationMessage{
         didSet{
             titleLabel.text = message.title
@@ -43,15 +62,17 @@ class NotificationView: UIView {
     var tapHandler: NotificationViewTapHandler?
     
     //MARK: Init
-    init(notificationMessage message: NotificationMessage, tapHandler handler:@escaping NotificationViewTapHandler = {}) {
+    init(notificationMessage message: NotificationMessage, withColor color: NotificationColor = .green, tapHandler handler:@escaping NotificationViewTapHandler = {}) {
         self.message = message
         self.tapHandler = handler
+        self.color = color
         super.init(frame: CGRect.zero)
         nibSetup()
     }
     
     required init?(coder aDecoder: NSCoder) {
         message = NotificationMessage()
+        color = .green
         super.init(coder: aDecoder)
         nibSetup()
     }
@@ -64,9 +85,10 @@ class NotificationView: UIView {
         contentView = loadViewFromNib()
         contentView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         contentView.translatesAutoresizingMaskIntoConstraints = false
-        contentView.backgroundColor = .red
         
         addSubview(contentView)
+        
+        contentView.backgroundColor = color.UIColorValue
 
         contentView.topAnchor.constraint(equalTo: self.topAnchor).isActive = true
         contentView.bottomAnchor.constraint(equalTo: self.bottomAnchor).isActive = true
