@@ -29,8 +29,11 @@ class StartViewController: UIViewController {
     
     @IBAction func enterChat(_ sender: Any) {
         let sb = UIStoryboard(name: "Main", bundle: nil)
-        let vc = sb.instantiateViewController(withIdentifier: "chat")
-        present(vc, animated: true, completion: nil)
+        let vc = sb.instantiateViewController(withIdentifier: "chat") as! ViewController
+        let user = User(name: textField.text!, tag: "Its me")
+        present(vc, animated: true) {
+            vc.user = user
+        }
     }
     
     private func setGoButton(){

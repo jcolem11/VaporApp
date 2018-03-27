@@ -17,10 +17,15 @@ class ViewController: UIViewController{
     static let LocalWebSocketURLString = "ws://localhost:8080/chat"
     static let RemoteWebSocketURLString = "ws://possible-develop.vapor.cloud/chat"
     
+    @IBOutlet weak var contentView: UIView!
     @IBOutlet weak var textfield: UITextField!
-    @IBOutlet weak var scrollView: UIScrollView!
+    @IBOutlet weak var tableView: UITableView!
+    @IBOutlet var contentBottomn: NSLayoutConstraint!
     
+    var contentToKeyBoardConstraint: NSLayoutConstraint?
     var socket = WebSocket(url:URL(string:ViewController.LocalWebSocketURLString)!)
+    var user : User!
+    var messages: [ChatMessage] = [ChatMessage]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,8 +33,11 @@ class ViewController: UIViewController{
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
         
+        tableView.delegate = self
+        tableView.dataSource = self
         textfield.delegate = self
         socket.delegate = self
+        
         socket.connect()
         
     }
@@ -44,7 +52,7 @@ extension ViewController: UITextFieldDelegate{
             return true
         }
         
-        let m = ChatMessage(sender: "me", text: text)
+        let m = ChatMessage(sender: user.name, text: text)
         
         if let json = m.json{
             socket.write(data: json)
@@ -127,16 +135,35 @@ extension ViewController: WebSocketDelegate{
     }
 }
 
+extension ViewController: UITableViewDelegate{}
+extension ViewController: UITableViewDataSource{}
+
 extension ViewController: KeyboardPresenting{
     
     @objc func keyboardWillShow(_ notification: Notification) {
         if let keyboardSize = (notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
-            scrollView.contentInset.bottom = keyboardSize.height
+           
+            let height = keyboardSize.height
+           
+            contentBottomn.isActive = false
+            
+            let new = contentView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -height)
+           
+            new.isActive = true
+            
+            if contentToKeyBoardConstraint == nil{
+                contentToKeyBoardConstraint = new
+            }
+            
+            view.layoutIfNeeded()
         }
     }
     
     @objc func keyboardWillHide(_ notification: Notification) {
-        scrollView.contentInset.bottom = 0
+        contentToKeyBoardConstraint?.isActive = false
+        contentBottomn.isActive = true
+        view.layoutIfNeeded()
+        tableView.contentInset.bottom = 0
     }
 }
 
