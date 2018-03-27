@@ -27,7 +27,7 @@ class ViewController: UIViewController{
         
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
-
+        
         textfield.delegate = self
         socket.delegate = self
         socket.connect()
@@ -43,7 +43,13 @@ extension ViewController: UITextFieldDelegate{
             textfield.resignFirstResponder()
             return true
         }
-        socket.write(string: text)
+        
+        let m = ChatMessage(sender: "me", text: text)
+        
+        if let json = m.json{
+            socket.write(data: json)
+        }
+        
         textField.text = nil
         return true
     }
@@ -77,7 +83,7 @@ extension UIViewController{
     
     func dismissNotificationView(_ notificationView:NotificationView){
         let offsetConstraint = notificationView.topAnchor.constraint(equalTo: self.view.topAnchor, constant: -300.00)
-
+        
         UIView.animate(withDuration: 0.2, animations: {
             offsetConstraint.isActive = true
             self.view.layoutIfNeeded()
@@ -99,7 +105,7 @@ extension ViewController: WebSocketDelegate{
     func websocketDidDisconnect(socket: WebSocketClient, error: Error?) {
         let message = NotificationMessage(title: "WebSocket:", content: "Disconnected")
         presentNotification(withMessage: message)
-        print("SOCKET DISCONNECTED")
+        print("SOCKET DISCONNECTED; Reconnecting")
     }
     
     func websocketDidReceiveMessage(socket: WebSocketClient, text: String) {
@@ -108,7 +114,16 @@ extension ViewController: WebSocketDelegate{
     }
     
     func websocketDidReceiveData(socket: WebSocketClient, data: Data) {
-        print("SOCKET RECEIVED DATA")
+        do{
+            if let json = try JSONSerialization.jsonObject(with: data) as? [String: String]{
+                let message = ChatMessage(dict: json)
+                let notification = NotificationMessage(title: message.sender, content: message.text)
+                presentNotification(withMessage: notification)
+            }
+        }catch{
+            print("json error: \(error.localizedDescription)")
+        }
+        print("SOCKET RECEIVED DATA:\n")
     }
 }
 
