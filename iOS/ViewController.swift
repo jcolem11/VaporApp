@@ -14,6 +14,7 @@ protocol KeyboardPresenting {
 }
 class ViewController: UIViewController{
     
+    static let CellID = "cell"
     static let LocalWebSocketURLString = "ws://localhost:8080/chat"
     static let RemoteWebSocketURLString = "ws://possible-develop.vapor.cloud/chat"
     
@@ -32,7 +33,9 @@ class ViewController: UIViewController{
         
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
-        
+       
+        tableView.estimatedRowHeight = 150
+        tableView.rowHeight = UITableViewAutomaticDimension
         tableView.delegate = self
         tableView.dataSource = self
         textfield.delegate = self
@@ -125,8 +128,11 @@ extension ViewController: WebSocketDelegate{
         do{
             if let json = try JSONSerialization.jsonObject(with: data) as? [String: String]{
                 let message = ChatMessage(dict: json)
-                let notification = NotificationMessage(title: message.sender, content: message.text)
-                presentNotification(withMessage: notification)
+                messages.append(message)
+                tableView.beginUpdates()
+                tableView.insertRows(at: [IndexPath(row: messages.count-1, section: 0)], with: .top)
+                tableView.endUpdates()
+                tableView.scrollToRow(at: IndexPath(row: messages.count-1, section: 0), at: .bottom, animated: true)
             }
         }catch{
             print("json error: \(error.localizedDescription)")
@@ -134,9 +140,28 @@ extension ViewController: WebSocketDelegate{
         print("SOCKET RECEIVED DATA:\n")
     }
 }
+extension ViewController:UITableViewDelegate{
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return UITableViewAutomaticDimension
+    }
+}
 
-extension ViewController: UITableViewDelegate{}
-extension ViewController: UITableViewDataSource{}
+extension ViewController: UITableViewDataSource{
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return messages.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: ViewController.CellID, for: indexPath) as! ChatMessageCell
+        let message = messages[indexPath.row]
+        cell.configureWith(message)
+        return cell
+    }
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 1
+    }
+}
 
 extension ViewController: KeyboardPresenting{
     
@@ -150,10 +175,7 @@ extension ViewController: KeyboardPresenting{
             let new = contentView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -height)
            
             new.isActive = true
-            
-            if contentToKeyBoardConstraint == nil{
-                contentToKeyBoardConstraint = new
-            }
+            contentToKeyBoardConstraint = new
             
             view.layoutIfNeeded()
         }
@@ -163,7 +185,6 @@ extension ViewController: KeyboardPresenting{
         contentToKeyBoardConstraint?.isActive = false
         contentBottomn.isActive = true
         view.layoutIfNeeded()
-        tableView.contentInset.bottom = 0
     }
 }
 
