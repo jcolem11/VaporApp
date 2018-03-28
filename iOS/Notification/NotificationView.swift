@@ -26,10 +26,11 @@ struct NotificationMessage{
     var title: String = ""
     var content: String = ""
 }
+typealias NotificationViewTapHandler = () -> Void
+
 
 class NotificationView: UIView {
     
-    typealias NotificationViewTapHandler = () -> Void
     
     //MARK: Properties
     @IBOutlet var contentView: UIView!

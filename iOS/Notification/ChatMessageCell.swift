@@ -21,5 +21,10 @@ class ChatMessageCell: UITableViewCell {
         super.awakeFromNib()
         isUserInteractionEnabled = false 
     }
-    
+ 
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        senderLabel.text = nil
+        contentLabel.text = nil
+    }
 }

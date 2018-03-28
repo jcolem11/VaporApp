@@ -34,7 +34,7 @@ class ViewController: UIViewController{
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
        
-        tableView.estimatedRowHeight = 150
+        tableView.estimatedRowHeight = 44.0
         tableView.rowHeight = UITableViewAutomaticDimension
         tableView.delegate = self
         tableView.dataSource = self
@@ -68,13 +68,22 @@ extension ViewController: UITextFieldDelegate{
 }
 
 extension UIViewController{
-    
     func presentNotification(withMessage message: NotificationMessage){
+        
+        self.presentNotification(withMessage: message){
+            for view in self.view.subviews{
+                guard let nv = view as? NotificationView else {
+                    continue
+                }
+                self.dismissNotificationView(nv)
+            }
+        }
+    }
+    
+    func presentNotification(withMessage message: NotificationMessage, handler tapHandler: @escaping NotificationViewTapHandler){
         let nv = NotificationView(notificationMessage: message)
         
-        nv.tapHandler = {
-            self.dismissNotificationView(nv)
-        }
+        nv.tapHandler = tapHandler
         
         view.addSubview(nv)
         view.bringSubview(toFront: nv)
@@ -108,15 +117,17 @@ extension UIViewController{
 extension ViewController: WebSocketDelegate{
     
     func websocketDidConnect(socket: WebSocketClient) {
-        let message = NotificationMessage(title: "WebSocket:", content: "Connection Successful")
+        let message = NotificationMessage(title: "WebSocket Connection Successful", content: "tap to close")
         presentNotification(withMessage: message)
         print("SOCKET CONNECTION SUCCESSFUL")
     }
     
     func websocketDidDisconnect(socket: WebSocketClient, error: Error?) {
-        let message = NotificationMessage(title: "WebSocket:", content: "Disconnected")
-        presentNotification(withMessage: message)
-        print("SOCKET DISCONNECTED; Reconnecting")
+        let message = NotificationMessage(title: "WebSocket Disconnected", content: "tap to attempt reconnection")
+        presentNotification(withMessage: message){
+            self.socket.connect()
+        }
+        print("SOCKET DISCONNECTED")
     }
     
     func websocketDidReceiveMessage(socket: WebSocketClient, text: String) {
@@ -130,7 +141,9 @@ extension ViewController: WebSocketDelegate{
                 let message = ChatMessage(dict: json)
                 messages.append(message)
                 tableView.beginUpdates()
-                tableView.insertRows(at: [IndexPath(row: messages.count-1, section: 0)], with: .top)
+                //TODO: Reloading shouldnt be necessary, but for some reason insertRows() causes strange layout issues
+                tableView.reloadData()
+                tableView.insertRows(at: [IndexPath(row: messages.count-1, section: 0)], with: .fade)
                 tableView.endUpdates()
                 tableView.scrollToRow(at: IndexPath(row: messages.count-1, section: 0), at: .bottom, animated: true)
             }
@@ -140,6 +153,7 @@ extension ViewController: WebSocketDelegate{
         print("SOCKET RECEIVED DATA:\n")
     }
 }
+
 extension ViewController:UITableViewDelegate{
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return UITableViewAutomaticDimension

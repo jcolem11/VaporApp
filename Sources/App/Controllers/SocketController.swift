@@ -53,7 +53,7 @@ final class SocketController{
                     do{
                         try s.socket.send(data)
                     } catch let error {
-                        //Send error only to sender
+                        //TODO:Send error only to sender
                         print(error)
                     }
                 }
