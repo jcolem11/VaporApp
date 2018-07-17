@@ -1,4 +1,5 @@
 import FluentSQLite
+import Leaf
 import Vapor
 
 /// Called before your application initializes.
@@ -29,5 +30,8 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     var migrations = MigrationConfig()
     migrations.add(model: Todo.self, database: .sqlite)
     services.register(migrations)
+    
+    //Leaf templating
+    try services.register(LeafProvider())
 
 }

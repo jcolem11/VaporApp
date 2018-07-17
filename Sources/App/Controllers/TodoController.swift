@@ -9,6 +9,7 @@ final class TodoController {
 
     /// Saves a decoded `Todo` to the database.
     func create(_ req: Request) throws -> Future<Todo> {
+        //The todo is the content of the post request. We decode this and map it to the Todo model(SQLite model) to create an object we can call save on
         return try req.content.decode(Todo.self).flatMap { todo in
             return todo.save(on: req)
         }
