@@ -13,13 +13,15 @@ import Leaf
 
 
 final class UserController {
-    func getAll(_ req: Request) throws -> Future<View> {
-        let leaf = try req.make(LeafRenderer.self)
-        let context = [String: String]()
-        return try leaf.render("home", context)
+    
+    func test(_ req: Request) throws -> String{
+        return "Hello, World"
     }
     
-//    func createUser(_ req: Request) throws -> Future<User> {
-//        Save to SQLite
-//    }
+    func getAll(_ req: Request) throws -> Future<View> {
+        let leaf = try req.make(LeafRenderer.self)
+        let user = User(name: "Bob")
+        return leaf.render("getall", user)
+    }
+
 }

@@ -1,0 +1,11 @@
+<html>
+<h1> Hello </h1>
+
+/*
+    MAKE NOTE OF THIS:
+    Must access the passed in object's properties directly.
+    Cannot use 'users.name', for example.
+*/
+
+<body>#(name)</body>
+</html>

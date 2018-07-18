@@ -8,7 +8,8 @@ public func routes(_ router: Router) throws {
     }
 
     let userController = UserController()
-    router.get("getAll", use: userController.getAll)
+    router.get("users","all", use: userController.getAll)
+    router.get("test", use: userController.test)
     
     // Example of configuring a controller
     let todoController = TodoController()
