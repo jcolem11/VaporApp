@@ -1,13 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+  <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+  <link rel="stylesheet" href="styles/basic.css">
+</head>
+
 <form action="/login" method="post">
-<div>
-<label for="say">Name:</label>
-<input name="name">
-</div>
-<div>
-<label for="password">Password:</label>
-<input name="password">
-</div>
-<div>
-<button>Submit</button>
-</div>
-</form>
+  <div>
+    <div class="mdl-textfield mdl-js-textfield">
+      <input class="mdl-textfield__input" type="text" name="name">
+      <label class="mdl-textfield__label" >Name</label>
+    </div>
+  </div>
+  <div>
+    <div class="mdl-textfield mdl-js-textfield">
+      <input class="mdl-textfield__input" type="text" name="password">
+      <label class="mdl-textfield__label" >Password</label>
+    </div>
+  </div>
+  <div>
+    <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">Submit</button>
+  </form>
+  </html>

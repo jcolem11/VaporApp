@@ -8,16 +8,19 @@ public func routes(_ router: Router) throws {
         return "Hello, world!"
     }
 
+    // Test
     router.get("home") { req -> Future<View> in
         let leaf = try req.make(LeafRenderer.self)
         let dummyContext = [String:String]()
         return leaf.render("login", dummyContext)
     }
     
+    // User interactions
     let userController = UserController()
     router.get("users","all", use: userController.getAll)
     router.get("test", use: userController.test)
     router.post("login", use:userController.login)
+
     
     // Example of configuring a controller
     let todoController = TodoController()

@@ -1,0 +1,6 @@
+framework module FrontEndComponents {
+  umbrella header "FrontEndComponents.h"
+
+  export *
+  module * { export * }
+}

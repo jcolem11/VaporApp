@@ -15,11 +15,20 @@ final class User: SQLiteModel {
     var id: Int?
   
     var name: String
+    var password: String
     
     /// Creates a new `User`.
-    init(id:Int? = nil, name: String) {
+    init(id:Int? = nil, name: String, password: String) {
         self.id = id
         self.name = name
+        self.password = password
+    }
+    
+    func didCreate(on conn: SQLiteConnection) throws -> EventLoopFuture<User> {
+        let userID = id ?? -1
+        print("DID CREATE: \(name) - \(userID) ")
+        /// Return the user. No async work is being done, so we must create a future manually.
+        return Future.map(on: conn) { self }
     }
 }
 
