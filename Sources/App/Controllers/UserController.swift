@@ -15,23 +15,42 @@ import Fluent
 
 final class UserController {
     
+    let dummyContext = [String:String]()
     
     func test(_ req: Request) throws -> String{
         return "Hello, World"
     }
     
+    func register(_ req: Request) throws -> Future<View>{
+        let leaf = try req.make(LeafRenderer.self)
+        
+        return try req.content.decode(User.self).flatMap(to:View.self){ reqUser in
+            let newUser: User = User(name: reqUser.name, password: reqUser.password)
+            newUser.create(on: req).always {
+                print("USER SUCCESSFULLY CREATED")
+            }
+            
+            return try self.getAll(req).flatMap(to:View.self){ users in
+                return leaf.render("getall", ["users" : users])
+            }
+        }
+    }
+    
     func login(_ req: Request) throws -> Future<View> {
         let leaf = try req.make(LeafRenderer.self)
-        let dummyContext = [String:String]()
         
         /* https://docs.vapor.codes/3.0/vapor/content/#decode */
         
         return try req.content.decode(User.self).flatMap(to: View.self) { user in
             User.query(on: req).filter(\User.name == user.name).filter(\User.password == user.password).first().flatMap(to: View.self) { user in
-                guard let user = user else{ throw Abort(.notFound) }
-                return leaf.render("login", user)
+                guard let _ = user else{ throw Abort(.notFound) }
+//                req.redirect(to: <#T##String#>)
+                return try self.getAll(req).flatMap(to:View.self){ users in
+                    return leaf.render("getall", ["users" : users])
+                }
             }}.catchFlatMap({ (error) -> (EventLoopFuture<View>) in
-                return leaf.render("login", dummyContext)
+                print("LOGIN FAILED")
+                return leaf.render("register", self.dummyContext)
             })
     }
     

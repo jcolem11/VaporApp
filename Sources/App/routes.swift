@@ -20,6 +20,7 @@ public func routes(_ router: Router) throws {
     router.get("users","all", use: userController.getAll)
     router.get("test", use: userController.test)
     router.post("login", use:userController.login)
+    router.post("register", use:userController.register)
 
     
     // Example of configuring a controller

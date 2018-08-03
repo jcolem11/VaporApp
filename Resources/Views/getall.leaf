@@ -4,8 +4,11 @@
 /*
     MAKE NOTE OF THIS:
     Must access the passed in object's properties directly.
-    Cannot use 'users.name', for example.
+    Cannot use 'users.name', for example. Except for loops, apparently.
 */
 
-<body>#(name)</body>
+<body>#(users)</body>
+#for(user in users) {
+    <p>#(user.name) is here.</p>
+}
 </html>
