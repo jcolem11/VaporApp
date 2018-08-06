@@ -32,7 +32,28 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     migrations.add(model: User.self, database: .sqlite)
     services.register(migrations)
     
-    //Leaf templating
+    //MARK: Leaf templating
     try services.register(LeafProvider())
+    
+    //MARK: WebSocket server
+    // Create a new NIO websocket server
+    let wss = NIOWebSocketServer.default()
+    
+    // Add WebSocket upgrade support to GET /chatroom
+    wss.get("chatroom") { ws, req in
+        print("CONNECTED TO WEBSOCKET")
+        
+        ws.onText { ws, text in
+            // Simply echo any received text
+            ws.send(text)
+        }
+        
+        ws.onBinary({ (socket, data) in
+            socket.send("")
+        })
+    }
+    
+    // Register our server
+     services.register(wss, as: WebSocketServer.self)
 
 }
